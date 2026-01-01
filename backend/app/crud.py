@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 
 from . import models, security
 from .models import GiftCardStatus
+from .utils import generate_giftcard_code
+from .security import hash_giftcard_code
 
 
 # ---------- Users ----------
@@ -28,12 +30,21 @@ def get_giftcard_by_hash(db: Session, code_hash: str) -> Optional[models.GiftCar
     return db.query(models.GiftCard).filter(models.GiftCard.code_hash == code_hash).first()
 
 
-def create_giftcard(db: Session, code_hash: str, value: int, currency: str = "GBP") -> models.GiftCard:
-    card = models.GiftCard(code_hash=code_hash, value=value, currency=currency)
-    db.add(card)
+def create_giftcard(db: Session, value: int, currency: str = "GBP"):
+    plain_code = generate_giftcard_code()
+    code_hash = hash_giftcard_code(plain_code)
+
+    giftcard = models.GiftCard(
+        code_hash=code_hash,
+        value=value,
+        currency=currency
+    )
+
+    db.add(giftcard)
     db.commit()
-    db.refresh(card)
-    return card
+    db.refresh(giftcard)
+
+    return giftcard, plain_code
 
 
 def list_giftcards(db: Session, skip: int = 0, limit: int = 100):

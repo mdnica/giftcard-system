@@ -35,3 +35,10 @@ def decode_access_token(token: str) -> Optional[TokenData]:
         return TokenData(email=email)
     except JWTError:
         return None
+
+
+def hash_giftcard_code(code: str) -> str:
+    return pwd_context.hash(code)
+
+def verify_giftcard_code(code: str, code_hash: str) -> bool:
+    return pwd_context.verify(code, code_hash)
