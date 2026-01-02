@@ -1,3 +1,4 @@
+import secrets, hashlib
 from datetime import datetime
 from typing import Optional
 
@@ -27,41 +28,58 @@ def create_user(db: Session, email: str, password: str, is_admin: bool = False) 
 # ---------- Gift Cards ----------
 
 def get_giftcard_by_hash(db: Session, code_hash: str) -> Optional[models.GiftCard]:
-    return db.query(models.GiftCard).filter(models.GiftCard.code_hash == code_hash).first()
+    return (
+    db.query(models.GiftCard)
+    .filter(models.GiftCard.code_hash == code_hash)
+    .first()
+    )
 
 
 def create_giftcard(db: Session, value: int, currency: str = "GBP"):
-    plain_code = generate_giftcard_code()
-    code_hash = hash_giftcard_code(plain_code)
+     plain_code = f"GC-{secrets.token_hex(6).upper()}"
 
-    giftcard = models.GiftCard(
+     code_hash = hashlib.sha256(plain_code.encode()).hexdigest()
+
+     giftcard = models.GiftCard(
         code_hash=code_hash,
         value=value,
         currency=currency
     )
 
-    db.add(giftcard)
-    db.commit()
-    db.refresh(giftcard)
+     db.add(giftcard)
+     db.commit()
+     db.refresh(giftcard)
 
-    return giftcard, plain_code
+     return giftcard, plain_code
 
 
 def list_giftcards(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.GiftCard).offset(skip).limit(limit).all()
 
 
-def redeem_giftcard(
-    db: Session,
-    card: models.GiftCard,
-    user_identifier: str,
-) -> models.GiftCard:
+def redeem_giftcard(db: Session, code: str):
+    code_hash = hashlib.sha256(code.encode()).hexdigest()
+
+    card = (
+        db.query(models.GiftCard)
+        .filter(models.GiftCard.code_hash == code_hash)
+        .first()
+    )
+
+    if not card:
+        return None, "INVALID_CODE"
+
+    if card.status != GiftCardStatus.active:
+        return None, "ALREADY_REDEEMED"
+
     card.status = GiftCardStatus.redeemed
-    card.redeemed_by = user_identifier
     card.redeemed_at = datetime.utcnow()
+
     db.commit()
     db.refresh(card)
-    return card
+
+    return card, None
+
 
 
 def increment_attempts(db: Session, card: models.GiftCard, ip: str, lock_threshold: int = 5):

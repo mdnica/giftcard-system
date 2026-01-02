@@ -42,6 +42,17 @@ class GiftCardBase(BaseModel):
 class GiftCardCreate(GiftCardBase):
     pass
 
+class GiftCardCreated(BaseModel):
+    id: int
+    value: int
+    currency: str
+    code: str            # shown ONCE
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 
 class GiftCardOut(BaseModel):
     id: int
@@ -53,7 +64,7 @@ class GiftCardOut(BaseModel):
     redeemed_by: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class GiftCardStatusOut(BaseModel):
@@ -62,6 +73,15 @@ class GiftCardStatusOut(BaseModel):
     currency: str
     redeemed_by: Optional[str]
     redeemed_at: Optional[datetime]
+
+
+class GiftCardRedeem(BaseModel):
+    code: str
+
+    model_config = {
+        "from_attributes": True
+    }
+
 
 
 class RedeemRequest(BaseModel):

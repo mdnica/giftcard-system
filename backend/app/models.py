@@ -22,7 +22,7 @@ class GiftCard(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     redeemed_at = Column(DateTime(timezone=True), nullable=True)
     redeemed_by = Column(String, nullable=True)
-s    attempts = Column(Integer, default=0)
+    attempts = Column(Integer, default=0)
     last_attempt_ip = Column(String, nullable=True)
 
 
