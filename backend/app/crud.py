@@ -57,7 +57,7 @@ def list_giftcards(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.GiftCard).offset(skip).limit(limit).all()
 
 
-def redeem_giftcard(db: Session, code: str):
+def redeem_giftcard(db: Session, code: str, ip: str):
     code_hash = hashlib.sha256(code.encode()).hexdigest()
 
     card = (
@@ -66,19 +66,30 @@ def redeem_giftcard(db: Session, code: str):
         .first()
     )
 
+    # ❌ Invalid code (no card found)
     if not card:
         return None, "INVALID_CODE"
 
-    if card.status != GiftCardStatus.active:
+    # 🔒 Locked card
+    if card.status == GiftCardStatus.locked:
+        return None, "LOCKED"
+
+    # 🔁 Already redeemed
+    if card.status == GiftCardStatus.redeemed:
         return None, "ALREADY_REDEEMED"
 
+    # ✅ Success path
     card.status = GiftCardStatus.redeemed
     card.redeemed_at = datetime.utcnow()
+    card.attempts = 0
+    card.last_attempt_ip = ip
 
     db.commit()
     db.refresh(card)
 
     return card, None
+
+
 
 
 

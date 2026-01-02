@@ -49,15 +49,27 @@ def list_giftcards(
 @router.post("/redeem")
 def redeem_giftcard(
     payload: schemas.GiftCardRedeem,
+    request: Request,
     db: Session = Depends(get_db),
 ):
-    card, error = crud.redeem_giftcard(db, payload.code)
+    client_ip = request.client.host
+
+    card, error = crud.redeem_giftcard(db, payload.code, client_ip)
 
     if error == "INVALID_CODE":
         raise HTTPException(status_code=404, detail="Invalid gift card")
 
+    if error == "LOCKED":
+        raise HTTPException(
+            status_code=403,
+            detail="Gift card locked due to too many failed attempts"
+        )
+
     if error == "ALREADY_REDEEMED":
-        raise HTTPException(status_code=400, detail="Gift card already redeemed")
+        raise HTTPException(
+            status_code=400,
+            detail="Gift card already redeemed"
+        )
 
     return {
         "message": "Gift card redeemed successfully",
