@@ -86,39 +86,9 @@ CSS
 
 Vanilla JavaScript (fetch API)
 
-📁 Project Structure
-giftcard-system/
-│
-├── backend/
-│ ├── app/
-│ │ ├── api/
-│ │ │ ├── auth.py
-│ │ │ └── giftcards.py
-│ │ ├── middleware/
-│ │ │ └── rate_limit.py
-│ │ ├── models.py
-│ │ ├── schemas.py
-│ │ ├── security.py
-│ │ ├── database.py
-│ │ └── main.py
-│ │
-│ ├── tests/
-│ │ ├── test_auth.py
-│ │ ├── test_giftcards.py
-│ │ └── test_rate_limit.py
-│ │
-│ └── giftcards.db
-│
-├── frontend/
-│ ├── index.html
-│ ├── style.css
-│ └── script.js
-│
-└── README.md
-
 ⚙️ Setup & Run
 1️⃣ Clone the repository
-git clone https://github.com/your-username/giftcard-system.git
+git clone https://github.com/mdnica/giftcard-system.git
 cd giftcard-system
 
 2️⃣ Backend setup
